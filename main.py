@@ -1,29 +1,98 @@
-from machine import Pin, PWM, UART
-import time
-
-# Find Baud Rate for Pico W
-uart = UART(0, 9600)
-# Experiment with Power Levels
-POWER_LEVEL = 0 # Change Later
-# Change Pins Later
-RIGHT_FORWARD_PIN = p1
-RIGHT_REVERSE_PIN = p2
-LEFT_FORWARD_PIN = p3
-LEFT_REVERSE_PIN = p4
-
-right_forward = PWM(Pin(RIGHT_FORWARD_PIN))
-right_reverse = PWM(Pin(RIGHT_REVERSE_PIN))
-left_forward = PWM(Pin(LEFT_FORWARD_PIN))
-left_reverse = PWM(Pin(LEFT_REVERSE_PIN))
+import machine
+import utime #importing time
 
 
-def spin_wheel(pwm):
-        pwm.duty_u16(POWER_LEVEL)
-        time.sleep(3)
-        pwm.duty_u16(0)
-        time.sleep(2)
+#Defining UART channel and Baud Rate
+uart = machine.UART(0,9900)
+
+LED = machine.Pin("LED", machine.Pin.OUT)
+IN1 = machine.Pin(21, machine.Pin.OUT)
+IN2 = machine.Pin(20, machine.Pin.OUT)
+IN3 = machine.Pin(19, machine.Pin.OUT)
+IN4 = machine.Pin(18, machine.Pin.OUT)
+
+def motor_forward():
+    LED.toggle()
+    IN1.on()
+    LED.toggle()
+    IN2.off()
+    LED.toggle()
+    IN3.off()
+    LED.toggle()
+    IN4.on()
+
+# Define a function to move the motor backward
+def motor_backward():
+    IN1.off()
+    LED.toggle()
+    IN2.on()
+    LED.toggle()
+    IN3.on()
+    LED.toggle()
+    IN4.off()
+    
+def motor_left():
+    LED.toggle()
+    IN1.on()
+    LED.toggle()
+    IN2.off()
+    LED.toggle()
+    IN3.on()
+    LED.toggle()
+    IN4.off()
+
+def motor_right():
+    LED.toggle()
+    IN1.off()
+    LED.toggle()
+    IN2.on()
+    LED.toggle()
+    IN3.off()
+    LED.toggle()
+    IN4.on()
+
+def stop():
+    IN1.off()
+    IN2.off()
+    IN3.off()
+    IN4.off()
+
+def party():
+    motor_forward()
+    utime.sleep(1)
+    motor_backward()
+    utime.sleep(1)
+    motor_left()
+    utime.sleep(3)
+    motor_right()
+    utime.sleep(3)
+    stop()
+
 
 while True:
-    if uart.any():
-        command = uart.readline()
-        print(command)
+    if uart.any(): #Checking if data available
+        data_raw=uart.read() #Getting data
+        data_raw=str(data_raw) #Converting bytes to str type
+        data_raw = data_raw.split("'")
+        data_raw = data_raw[1]
+        data_raw = str(data_raw)
+        data_raw = data_raw.split("\\")
+        data = data_raw[0]
+        print(data)
+        if('forward' in data):
+            motor_forward() #Forward
+        elif('backward' in data):
+            motor_backward() #Backward
+        elif('right' in data):
+            motor_right() #Turn Right
+        elif('left' in data):
+            motor_left() #Turn Left
+        elif("stop" in data):
+            stop() #Stop
+        elif("party" in data):
+            party() #Bonus
+        else:
+            stop() #Stop
+        
+        
+    
