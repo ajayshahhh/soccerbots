@@ -1,5 +1,6 @@
 import machine
 import utime #importing time
+from servo import Servo #importing servo 
 
 
 #Defining UART channel and Baud Rate
@@ -68,6 +69,20 @@ def party():
     utime.sleep(3)
     stop()
 
+my_servo = Servo(pin_id=16)
+delay_ms = 1 # define speed
+range_angle = 150 # define distance
+
+def kick():
+    for position in range(0, range_angle):
+        print(position)
+        my_servo.write(position)
+        utime.sleep_ms(delay_ms)
+    
+    for position in reversed(range(0, range_angle)):
+        print(position)
+        my_servo.write(position)
+        utime.sleep_ms(delay_ms)
 
 while True:
     if uart.any(): #Checking if data available
@@ -87,6 +102,8 @@ while True:
             motor_right() #Turn Right
         elif('left' in data):
             motor_left() #Turn Left
+        elif('kick' in data):
+            kick() #Kicking Mechanism
         elif("stop" in data):
             stop() #Stop
         elif("party" in data):
